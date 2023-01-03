@@ -95,8 +95,8 @@ class Solver:
         # self.MinimumInsertions()
         self.read_solution()
         self.ReportSolution(self.sol)
-        """self.TabuSearch(0)
-        self.ReportSolution(self.sol)"""
+        self.TabuSearch(0)
+        self.ReportSolution(self.sol)
         return self.sol
 
     def SetRoutedFlagToFalseForAllCustomers(self):
@@ -277,7 +277,7 @@ class Solver:
 
             localSearchIterator = localSearchIterator + 1
 
-            if localSearchIterator > 10000:
+            if localSearchIterator > 1000:
                 terminationCondition = True
 
         SolDrawer.draw('final_ts', self.bestSolution, self.allNodes)
@@ -325,13 +325,14 @@ class Solver:
 
     def FindBestRelocationMove(self, rm, iterator):
         for originRouteIndex in range(0, len(self.sol.routes)):
-            rt1:Route = self.sol.routes[originRouteIndex]
-            for targetRouteIndex in range (0, len(self.sol.routes)):
-                rt2:Route = self.sol.routes[targetRouteIndex]
-                for originNodeIndex in range (1, len(rt1.sequenceOfNodes) - 1):
-                    for targetNodeIndex in range (0, len(rt2.sequenceOfNodes) - 1):
+            rt1: Route = self.sol.routes[originRouteIndex]
+            for targetRouteIndex in range(0, len(self.sol.routes)):
+                rt2: Route = self.sol.routes[targetRouteIndex]
+                for originNodeIndex in range(1, len(rt1.sequenceOfNodes) - 1):
+                    for targetNodeIndex in range(0, len(rt2.sequenceOfNodes) - 1):
 
-                        if originRouteIndex == targetRouteIndex and (targetNodeIndex == originNodeIndex or targetNodeIndex == originNodeIndex - 1):
+                        if originRouteIndex == targetRouteIndex and (
+                                targetNodeIndex == originNodeIndex or targetNodeIndex == originNodeIndex - 1):
                             continue
 
                         A = rt1.sequenceOfNodes[originNodeIndex - 1]
@@ -345,11 +346,15 @@ class Solver:
                             if rt2.load + B.demand > rt2.capacity:
                                 continue
 
-                        costAdded = self.distanceMatrix[A.ID][C.ID] + self.distanceMatrix[F.ID][B.ID] + self.distanceMatrix[B.ID][G.ID]
-                        costRemoved = self.distanceMatrix[A.ID][B.ID] + self.distanceMatrix[B.ID][C.ID] + self.distanceMatrix[F.ID][G.ID]
+                        costAdded = self.distanceMatrix[A.ID][C.ID] + self.distanceMatrix[F.ID][B.ID] + \
+                                    self.distanceMatrix[B.ID][G.ID]
+                        costRemoved = self.distanceMatrix[A.ID][B.ID] + self.distanceMatrix[B.ID][C.ID] + \
+                                      self.distanceMatrix[F.ID][G.ID]
 
-                        originRtCostChange = self.distanceMatrix[A.ID][C.ID] - self.distanceMatrix[A.ID][B.ID] - self.distanceMatrix[B.ID][C.ID]
-                        targetRtCostChange = self.distanceMatrix[F.ID][B.ID] + self.distanceMatrix[B.ID][G.ID] - self.distanceMatrix[F.ID][G.ID]
+                        originRtCostChange = self.distanceMatrix[A.ID][C.ID] - self.distanceMatrix[A.ID][B.ID] - \
+                                             self.distanceMatrix[B.ID][C.ID]
+                        targetRtCostChange = self.distanceMatrix[F.ID][B.ID] + self.distanceMatrix[B.ID][G.ID] - \
+                                             self.distanceMatrix[F.ID][G.ID]
 
                         moveCost = costAdded - costRemoved
 
@@ -357,18 +362,21 @@ class Solver:
                             continue
 
                         if (moveCost < rm.moveCost):
-                            self.StoreBestRelocationMove(originRouteIndex, targetRouteIndex, originNodeIndex, targetNodeIndex, moveCost, originRtCostChange, targetRtCostChange, rm)
+                            self.StoreBestRelocationMove(originRouteIndex, targetRouteIndex, originNodeIndex,
+                                                         targetNodeIndex, moveCost, originRtCostChange,
+                                                         targetRtCostChange, rm)
+
 
     def FindBestSwapMove(self, sm, iterator):
         for firstRouteIndex in range(0, len(self.sol.routes)):
-            rt1:Route = self.sol.routes[firstRouteIndex]
-            for secondRouteIndex in range (firstRouteIndex, len(self.sol.routes)):
-                rt2:Route = self.sol.routes[secondRouteIndex]
-                for firstNodeIndex in range (1, len(rt1.sequenceOfNodes) - 1):
+            rt1: Route = self.sol.routes[firstRouteIndex]
+            for secondRouteIndex in range(firstRouteIndex, len(self.sol.routes)):
+                rt2: Route = self.sol.routes[secondRouteIndex]
+                for firstNodeIndex in range(1, len(rt1.sequenceOfNodes) - 1):
                     startOfSecondNodeIndex = 1
                     if rt1 == rt2:
                         startOfSecondNodeIndex = firstNodeIndex + 1
-                    for secondNodeIndex in range (startOfSecondNodeIndex, len(rt2.sequenceOfNodes) - 1):
+                    for secondNodeIndex in range(startOfSecondNodeIndex, len(rt2.sequenceOfNodes) - 1):
 
                         a1 = rt1.sequenceOfNodes[firstNodeIndex - 1]
                         b1 = rt1.sequenceOfNodes[firstNodeIndex]
@@ -384,8 +392,10 @@ class Solver:
 
                         if rt1 == rt2:
                             if firstNodeIndex == secondNodeIndex - 1:
-                                costRemoved = self.distanceMatrix[a1.ID][b1.ID] + self.distanceMatrix[b1.ID][b2.ID] + self.distanceMatrix[b2.ID][c2.ID]
-                                costAdded = self.distanceMatrix[a1.ID][b2.ID] + self.distanceMatrix[b2.ID][b1.ID] + self.distanceMatrix[b1.ID][c2.ID]
+                                costRemoved = self.distanceMatrix[a1.ID][b1.ID] + self.distanceMatrix[b1.ID][b2.ID] + \
+                                              self.distanceMatrix[b2.ID][c2.ID]
+                                costAdded = self.distanceMatrix[a1.ID][b2.ID] + self.distanceMatrix[b2.ID][b1.ID] + \
+                                            self.distanceMatrix[b1.ID][c2.ID]
                                 moveCost = costAdded - costRemoved
                             else:
 
@@ -414,7 +424,9 @@ class Solver:
                             continue
 
                         if moveCost < sm.moveCost:
-                            self.StoreBestSwapMove(firstRouteIndex, secondRouteIndex, firstNodeIndex, secondNodeIndex, moveCost, costChangeFirstRoute, costChangeSecondRoute, sm)
+                            self.StoreBestSwapMove(firstRouteIndex, secondRouteIndex, firstNodeIndex, secondNodeIndex,
+                                                   moveCost, costChangeFirstRoute, costChangeSecondRoute, sm)
+
 
     def ApplyRelocationMove(self, rm: RelocationMove, iterator):
         oldCost = self.CalculateTotalCost(self.sol)
@@ -574,6 +586,7 @@ class Solver:
         # n.isTabuTillIterator = iterator + self.tabuTenure
         n.isTabuTillIterator = iterator + random.randint(self.minTabuTenure, self.maxTabuTenure)
 
+
     def FindBestTwoOptMove(self, top, iterator):
         for rtInd1 in range(0, len(self.sol.routes)):
             rt1: Route = self.sol.routes[rtInd1]
@@ -593,15 +606,11 @@ class Solver:
                         L = rt2.sequenceOfNodes[nodeInd2 + 1]
 
                         if rt1 == rt2:
-                            if nodeInd1 == 0 and nodeInd2 == len(rt1.sequenceOfNodes) - 2:
-                                continue
                             costAdded = self.distanceMatrix[A.ID][K.ID] + self.distanceMatrix[B.ID][L.ID]
                             costRemoved = self.distanceMatrix[A.ID][B.ID] + self.distanceMatrix[K.ID][L.ID]
                             moveCost = costAdded - costRemoved
                         else:
                             if nodeInd1 == 0 and nodeInd2 == 0:
-                                continue
-                            if nodeInd1 == len(rt1.sequenceOfNodes) - 2 and nodeInd2 == len(rt2.sequenceOfNodes) - 2:
                                 continue
 
                             if self.CapacityIsViolated(rt1, nodeInd1, rt2, nodeInd2):
@@ -615,6 +624,7 @@ class Solver:
 
                         if moveCost < top.moveCost:
                             self.StoreBestTwoOptMove(rtInd1, rtInd2, nodeInd1, nodeInd2, moveCost, top)
+
 
     def CapacityIsViolated(self, rt1, nodeInd1, rt2, nodeInd2):
         rt1FirstSegmentLoad = 0
@@ -690,7 +700,3 @@ class Solver:
         top.positionOfFirstNode = nodeInd1
         top.positionOfSecondNode = nodeInd2
         top.moveCost = moveCost
-
-
-
-
