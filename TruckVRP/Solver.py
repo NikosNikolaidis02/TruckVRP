@@ -167,7 +167,7 @@ class Solver:
                 break
 
         for route in self.sol.routes:
-            route.cost = self.calculate_route_details(route.sequenceOfNodes)[0]
+            route.cost, route.load = self.calculate_route_details(route.sequenceOfNodes)
         self.sol.cost = self.CalculateTotalCost(self.sol)
 
         # print(cst, self.sol.cost)
