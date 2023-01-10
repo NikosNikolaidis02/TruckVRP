@@ -417,7 +417,7 @@ class Solver:
             localSearchIterator = localSearchIterator + 1
 
             # Το κάνω 30 για να τρέχει πιο γρήγορα στον έλεγχο
-            if localSearchIterator > 100:
+            if localSearchIterator > 10:
                 terminationCondition = True
 
         # SolDrawer.draw('final_ts', self.bestSolution, self.allNodes)
@@ -491,7 +491,7 @@ class Solver:
 
                         rt1size = len(rt1.sequenceOfNodes)
                         rt2size = len(rt2.sequenceOfNodes)
-                        '''
+
                         print('---------------')
                         print('rt1:')
                         for i in rt1.sequenceOfNodes:
@@ -503,7 +503,7 @@ class Solver:
                             print(j.ID)
                         print('rt2:', rt2size, 'F:', targetNodeIndex, 'G:', targetNodeIndex + 1)
                         print('---------------')
-                        '''
+                        
 
                         costAdded = (rt1size - (originNodeIndex + 1)) * self.distanceMatrix[A.ID][C.ID] + \
                                     (rt2size - targetNodeIndex) * self.distanceMatrix[F.ID][B.ID] + \
