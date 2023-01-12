@@ -38,7 +38,7 @@ class Model:
                 self.matrix[i][j] = dist"""
 
     def BuildModel(self):
-        f = open("../Instance.txt", "r")
+        f = open("Instance.txt", "r")
         readfile = f.read().splitlines()
         self.vehicle_number = int(readfile[0].split(",")[1])
         self.capacity = int(readfile[1].split(",")[1])
@@ -87,7 +87,7 @@ class Route:
     def __init__(self, dp, cap):
         self.sequenceOfNodes = []
         self.sequenceOfNodes.append(dp)
-        # self.sequenceOfNodes.append(dp)
+        self.sequenceOfNodes.append(dp)
         self.cost = 0
         self.capacity = cap
         self.load = 0
