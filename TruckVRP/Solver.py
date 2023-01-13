@@ -255,32 +255,59 @@ class Solver:
             if candidateCust.isRouted is False:
                 for rt in self.sol.routes:
                     if rt.load + candidateCust.demand <= rt.capacity:
-                        for j in range(0, len(rt.sequenceOfNodes) - 1):
+                          
+                        for j in range(0, len(rt.sequenceOfNodes)):
                             A = rt.sequenceOfNodes[j]
-                            B = rt.sequenceOfNodes[j + 1]
-                            costAdded = self.distanceMatrix[A.ID][candidateCust.ID] +\
-                                self.distanceMatrix[candidateCust.ID][B.ID]
-                            costRemoved = self.distanceMatrix[A.ID][B.ID]
-                            trialCost = costAdded - costRemoved
-                            if trialCost < best_insertion.cost:
-                                best_insertion.customer = candidateCust
-                                best_insertion.route = rt
-                                best_insertion.insertionPosition = j
-                                best_insertion.cost = trialCost
+                            if (len(rt.sequenceOfNodes) == 1):          # Route: 0 X    (Route has only the depot)                 
+                                
+                                trialCost = self.distanceMatrix[A.ID][candidateCust.ID] 
+                                    
+                            elif( (len(rt.sequenceOfNodes) -1) == j):   # Route: 0 x x x X (Last Node)
+
+                                trialCost = self.distanceMatrix[A.ID][candidateCust.ID] 
+                                
+                                for temp in range(0, j):
+                                    trialCost += self.distanceMatrix[rt.sequenceOfNodes[temp].ID][rt.sequenceOfNodes[temp + 1].ID]
+                                    trialCost += rt.sequenceOfNodes[temp + 1].unloading_time
+                            else:
+
+                                B = rt.sequenceOfNodes[j + 1]
+                                rtsize = len(rt.sequenceOfNodes)
+                                                                                
+                                trialCost = (rtsize - j) * self.distanceMatrix[A.ID][candidateCust.ID] + \
+                                    (rtsize - (j + 1)) * self.distanceMatrix[candidateCust.ID][B.ID] - \
+                                    (rtsize - (j + 1)) * self.distanceMatrix[A.ID][B.ID] + \
+                                    (rtsize - (j + 1)) * candidateCust.unloading_time
+
+                                for temp in range(0, j):
+                                    trialCost += self.distanceMatrix[rt.sequenceOfNodes[temp].ID][rt.sequenceOfNodes[temp + 1].ID]
+                                    trialCost += rt.sequenceOfNodes[temp + 1].unloading_time
+     
+
+                        if trialCost < best_insertion.cost:                           
+                            best_insertion.customer = candidateCust
+                            best_insertion.route = rt
+                            best_insertion.insertionPosition = j
+                            best_insertion.cost = trialCost
+
                     else:
                         continue
-                
+
 
     def MinimumInsertions(self):
         model_is_feasible = True
         self.sol = Solution()
         insertions = 0
+        temp_twra =0
 
         while insertions < len(self.customers):
             best_insertion = CustomerInsertionAllPositions()
-            self.Always_keep_an_empty_route()
-            self.IdentifyMinimumCostInsertion(best_insertion)
+            
+            if(len(self.sol.routes) < 14):
+                self.Always_keep_an_empty_route()
 
+            self.IdentifyMinimumCostInsertion(best_insertion)
+                                  
             if best_insertion.customer is not None:
                 self.ApplyCustomerInsertionAllPositions(best_insertion)
                 insertions += 1
@@ -293,8 +320,6 @@ class Solver:
             self.TestSolution()
 
         
-        self.sol.cost = self.CalculateTotalCost(self.sol)
-
     def ApplyCustomerInsertionAllPositions(self, insertion):
         insCustomer = insertion.customer
         rt = insertion.route
@@ -303,28 +328,47 @@ class Solver:
         rt.sequenceOfNodes.insert(insIndex + 1, insCustomer)
         rt.cost += insertion.cost
         self.sol.cost += insertion.cost
-        rt.load += insCustomer.demand
+        rt.load += insCustomer.demand  
         insCustomer.isRouted = True
 
-    def IdentifyBestInsertionAllPositions(self, bestInsertion, rt):
+    def IdentifyBestInsertionAllPositions(self, best_insertion, rt):
         for i in range(0, len(self.customers)):
             candidateCust: Node = self.customers[i]
             if candidateCust.isRouted is False:
                 if rt.load + candidateCust.demand <= rt.capacity:
                     lastNodePresentInTheRoute = rt.sequenceOfNodes[-2]
-                    for j in range(0, len(rt.sequenceOfNodes) - 1):
+                    for j in range(0, len(rt.sequenceOfNodes)):
                         A = rt.sequenceOfNodes[j]
-                        B = rt.sequenceOfNodes[j + 1]
-                        costAdded = self.distanceMatrix[A.ID][candidateCust.ID] + self.distanceMatrix[candidateCust.ID][
-                            B.ID]
-                        costRemoved = self.distanceMatrix[A.ID][B.ID]
-                        trialCost = costAdded - costRemoved
+                        if (len(rt.sequenceOfNodes) == 1):          # Route: 0 X    (Route has only the depot)                 
+                            
+                            trialCost = self.distanceMatrix[A.ID][candidateCust.ID] 
+                                
+                        elif( (len(rt.sequenceOfNodes) -1) == j):   # Route: 0 x x x X (Last Node)
 
-                        if trialCost < bestInsertion.cost:
-                            bestInsertion.customer = candidateCust
-                            bestInsertion.route = rt
-                            bestInsertion.cost = trialCost
-                            bestInsertion.insertionPosition = j
+                            trialCost = self.distanceMatrix[A.ID][candidateCust.ID] 
+                            
+                            for temp in range(0, j):
+                                trialCost += self.distanceMatrix[rt.sequenceOfNodes[temp].ID][rt.sequenceOfNodes[temp + 1].ID]
+                                trialCost += rt.sequenceOfNodes[temp + 1].unloading_time
+                        else:
+
+                            B = rt.sequenceOfNodes[j + 1]
+                            rtsize = len(rt.sequenceOfNodes)
+                                                                            
+                            trialCost = (rtsize - j) * self.distanceMatrix[A.ID][candidateCust.ID] + \
+                                (rtsize - (j + 1)) * self.distanceMatrix[candidateCust.ID][B.ID] - \
+                                (rtsize - (j + 1)) * self.distanceMatrix[A.ID][B.ID] + \
+                                (rtsize - (j + 1)) * candidateCust.unloading_time
+
+                            for temp in range(0, j):
+                                trialCost += self.distanceMatrix[rt.sequenceOfNodes[temp].ID][rt.sequenceOfNodes[temp + 1].ID]
+                                trialCost += rt.sequenceOfNodes[temp + 1].unloading_time
+
+                        if trialCost < best_insertion.cost:
+                            best_insertion.customer = candidateCust
+                            best_insertion.route = rt
+                            best_insertion.insertionPosition = j
+                            best_insertion.cost = trialCost
         
 # ===============================Methods that are used only in construction algorithms end here.=======================
 
@@ -459,6 +503,11 @@ class Solver:
                 rt_cumulative_cost += tot_time
                 tot_time += to_node.unloading_time
                 rt_load += from_node.demand
+            # epeidh den exoume apothiki sto telos, prepei na metraei kai to demand tou teleutaiou stin route
+            j = len(rt.sequenceOfNodes) -1
+            from_node = rt.sequenceOfNodes[j]
+            rt_load += from_node.demand
+            
             if abs(rt_cumulative_cost - rt.cost) > 0.0001:
                 print('Route Cost problem (first node of route:)', rt.sequenceOfNodes[1].ID)
             if rt_load != rt.load:
@@ -704,8 +753,9 @@ class Solver:
             rt = sol.routes[i]
             for j in range(0, len(rt.sequenceOfNodes)):
                 print(rt.sequenceOfNodes[j].ID, end=' ')
-            print(rt.cost)
-        print(self.sol.cost)
+            print()   
+            #print("route's cost: ",rt.cost)
+    
 
     def GetLastOpenRoute(self):
         if len(self.sol.routes) == 0:
@@ -781,7 +831,7 @@ class Solver:
             nodes_sequence = sol.routes[i].sequenceOfNodes
             rt_cumulative_cost = 0
             tot_time = 0
-            for j in range(len(nodes_sequence) - 1):
+            for j in range(len(nodes_sequence) - 2):
                 from_node = nodes_sequence[j]
                 to_node = nodes_sequence[j + 1]
                 tot_time += self.distanceMatrix[from_node.ID][to_node.ID]

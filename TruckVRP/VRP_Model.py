@@ -87,7 +87,7 @@ class Route:
     def __init__(self, dp, cap):
         self.sequenceOfNodes = []
         self.sequenceOfNodes.append(dp)
-        self.sequenceOfNodes.append(dp)
+        #self.sequenceOfNodes.append(dp)
         self.cost = 0
         self.capacity = cap
         self.load = 0
