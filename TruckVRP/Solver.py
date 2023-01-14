@@ -260,8 +260,8 @@ class Solver:
         # SolDrawer.draw(0, self.sol, self.allNodes)
 
         while terminationCondition is False:
-            operator = random.randint(0, 1)
-            # operator = 0
+            operator = random.randint(0, 2)
+            #operator = 2
 
             rm.Initialize()
             sm.Initialize()
@@ -297,7 +297,7 @@ class Solver:
             localSearchIterator = localSearchIterator + 1
 
             # Το κάνω 30 για να τρέχει πιο γρήγορα στον έλεγχο
-            if localSearchIterator > 1000:
+            if localSearchIterator > 1:
                 terminationCondition = True
 
         # SolDrawer.draw('final_ts', self.bestSolution, self.allNodes)
@@ -692,28 +692,26 @@ class Solver:
 
                             moveCost = costAdded - costRemoved
                         else:
+                            rt1sizeVol2 = nodeInd1 + 1 + (rt2size - (nodeInd2 + 1))
+                            rt2sizeVol2 = nodeInd2 + 1 + (rt1size - (nodeInd1 + 1))
                             if nodeInd1 == 0 and nodeInd2 == 0:
                                 continue
 
                             if self.CapacityIsViolated(rt1, nodeInd1, rt2, nodeInd2):
                                 continue
-                            costAdded = (rt1size - (nodeInd1 + 1)) * self.distanceMatrix[A.ID][L.ID] + \
-                                        (rt2size - (nodeInd2 + 1)) * self.distanceMatrix[B.ID][K.ID]
+                            costAdded = (rt1sizeVol2 - (nodeInd1 + 1)) * self.distanceMatrix[A.ID][L.ID] + \
+                                        (rt2sizeVol2 - (nodeInd2 + 1)) * self.distanceMatrix[B.ID][K.ID]
 
                             costRemoved = (rt1size - (nodeInd1 + 1)) * self.distanceMatrix[A.ID][B.ID] + \
                                           (rt2size - (nodeInd2 + 1)) * self.distanceMatrix[K.ID][L.ID]
 
-                            if (nodeInd1 + 2) < rt1size:
-                                costAdded += (rt1size - (nodeInd1 + 2)) * self.distanceMatrix[L.ID][
-                                    rt1.sequenceOfNodes[nodeInd1 + 2].ID]
-                                costRemoved += (rt1size - (nodeInd1 + 2)) * self.distanceMatrix[B.ID][
-                                    rt1.sequenceOfNodes[nodeInd1 + 2].ID]
+                            for i in range(0, nodeInd1):
+                                costAdded += (rt1sizeVol2 - (i + 1)) * self.distanceMatrix[rt1.sequenceOfNodes[i].ID][rt1.sequenceOfNodes[i+1].ID]
+                                costRemoved -= (rt1size - (i + 1)) * self.distanceMatrix[rt1.sequenceOfNodes[i].ID][rt1.sequenceOfNodes[i+1].ID]
 
-                            if (nodeInd2 + 2) < rt2size:
-                                costAdded += (rt2size - (nodeInd2 + 2)) * self.distanceMatrix[K.ID][
-                                    rt2.sequenceOfNodes[nodeInd2 + 2].ID]
-                                costRemoved += (rt2size - (nodeInd2 + 2)) * self.distanceMatrix[B.ID][
-                                    rt2.sequenceOfNodes[nodeInd2 + 2].ID]
+                            for j in range(0, nodeInd2):
+                                costAdded += (rt2sizeVol2 - (j + 1)) * self.distanceMatrix[rt2.sequenceOfNodes[j].ID][rt2.sequenceOfNodes[j+1].ID]
+                                costRemoved -= (rt1size - (j + 1)) * self.distanceMatrix[rt2.sequenceOfNodes[j].ID][rt2.sequenceOfNodes[j+1].ID]
 
                             moveCost = costAdded - costRemoved
 
