@@ -127,4 +127,4 @@ def test_solution(file_name, all_nodes, vehicles, capacity):
     print('Solution is ΟΚ. Total Cost:', cost_calculated)
 
 all_nodes, vehicles, capacity = load_model('Instance.txt')
-test_solution('example_solution.txt', all_nodes, vehicles, capacity)
+test_solution('solution.txt', all_nodes, vehicles, capacity)
