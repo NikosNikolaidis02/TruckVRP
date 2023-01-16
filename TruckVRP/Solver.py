@@ -91,9 +91,9 @@ class Solver:
         self.sol = None
         self.bestSolution = None
         # For TabuSearch
-        self.minTabuTenure = 50
-        self.maxTabuTenure = 60
-        self.tabuTenure = 20
+        self.minTabuTenure = 20
+        self.maxTabuTenure = 30
+        # self.tabuTenure = 20
         # For GLS
         rows = len(self.allNodes)
         self.distance_matrix_penalized = [[self.distanceMatrix[i][j] for j in range(rows)] for i in range(rows)]
@@ -106,7 +106,9 @@ class Solver:
         self.MinimumInsertions()
         # self.read_solution()
         self.ReportSolution(self.sol)
-        self.TabuSearch(0)
+        self.TabuSearch(True)
+        self.ReportSolution(self.sol)
+        self.TabuSearch(False)
         self.ReportSolution(self.sol)
         print('Total Cost is:', self.CalculateTotalCost(self.sol))
 
@@ -216,7 +218,7 @@ class Solver:
     # ===============================Methods that are used only in construction algorithms end here.====================
 
     def read_solution(self):
-        f = open("../example_solution.txt", "r")
+        f = open("example_solution.txt", "r")
         readfile = f.read().splitlines()
         number_of_routes = int(readfile[3])
         solution = [list() for _ in range(0, number_of_routes)]
@@ -258,12 +260,15 @@ class Solver:
             if id == n.ID:
                 return n
 
-    def TabuSearch(self, operator):
+    def TabuSearch(self, first_time):
         solution_cost_trajectory = []
         random.seed(3)
         self.bestSolution = self.cloneSolution(self.sol)
         terminationCondition = False
         localSearchIterator = 0
+        limit = 1400
+        if first_time is not True:
+            limit = 70
 
         rm = RelocationMove()
         sm = SwapMove()
@@ -323,7 +328,7 @@ class Solver:
 
             localSearchIterator = localSearchIterator + 1
 
-            if localSearchIterator > 3000:
+            if localSearchIterator > limit:
                 terminationCondition = True
 
         # SolDrawer.draw('final_ts', self.bestSolution, self.allNodes)
@@ -364,7 +369,7 @@ class Solver:
                 tot_time += to_node.unloading_time
                 rt_load += from_node.demand
             if abs(rt_cumulative_cost - rt.cost) > 0.0001:
-                print('Route Cost problem (first node of route:)', rt.sequenceOfNodes[1].ID)
+                print('Route Cost problem')
             if rt_load != rt.load:
                 print('Route Load problem')
 
